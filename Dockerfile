@@ -1,7 +1,5 @@
 ARG metabase_repo=metabase
-# Feed in version number from bash script
-ARG metabase_version
-#ARG metabase_version=latest
+ARG metabase_version=latest
 FROM metabase/${metabase_repo}:${metabase_version} as metabase
 
 FROM ubuntu:22.04
