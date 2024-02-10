@@ -1,36 +1,27 @@
-ARG metabase_repo=metabase
-ARG metabase_version=latest
-FROM metabase/${metabase_repo}:${metabase_version} as metabase
-
-FROM ubuntu:22.04
+FROM --platform=arm64v8 eclipse-temurin:17-jre
+#FROM arm64v8/eclipse-temurin:17-jre
 
 ENV FC_LANG en-US LC_CTYPE en_US.UTF-8
 
-# dependencies
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y --no-install-recommends bash fonts-dejavu-core fonts-dejavu-extra fontconfig curl openjdk-11-jre-headless && \
-    mkdir -p /app/certs && \
-    curl https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem -o /app/certs/rds-combined-ca-bundle.pem  && \
-    keytool -noprompt -import -trustcacerts -alias aws-rds -file /app/certs/rds-combined-ca-bundle.pem -keystore /etc/ssl/certs/java/cacerts -keypass changeit -storepass changeit && \
-    curl https://cacerts.digicert.com/DigiCertGlobalRootG2.crt.pem -o /app/certs/DigiCertGlobalRootG2.crt.pem  && \
-    keytool -noprompt -import -trustcacerts -alias azure-cert -file /app/certs/DigiCertGlobalRootG2.crt.pem -keystore /etc/ssl/certs/java/cacerts -keypass changeit -storepass changeit && \
-    mkdir -p /plugins && chmod a+rwx /plugins && \
-    useradd --shell /bin/bash metabase && \
-    apt-get purge -y curl && \
-    apt-get -y autoremove && \
-    apt-get -y clean && \
-    rm -rf /var/lib/{apt,dpkg,cache,log}/
-
-
-
 WORKDIR /app
 
-# copy app from the official image
-COPY --from=metabase --chown=metabase /app /app
-RUN chown metabase /app
+# dependencies
+RUN apk add -U bash fontconfig curl font-noto font-noto-arabic font-noto-hebrew font-noto-cjk java-cacerts && \
+    apk upgrade && \
+    rm -rf /var/cache/apk/* && \
+    mkdir -p /app/certs && \
+    curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /app/certs/rds-combined-ca-bundle.pem  && \
+    /opt/java/openjdk/bin/keytool -noprompt -import -trustcacerts -alias aws-rds -file /app/certs/rds-combined-ca-bundle.pem -keystore /etc/ssl/certs/java/cacerts -keypass changeit -storepass changeit && \
+    curl https://cacerts.digicert.com/DigiCertGlobalRootG2.crt.pem -o /app/certs/DigiCertGlobalRootG2.crt.pem  && \
+    /opt/java/openjdk/bin/keytool -noprompt -import -trustcacerts -alias azure-cert -file /app/certs/DigiCertGlobalRootG2.crt.pem -keystore /etc/ssl/certs/java/cacerts -keypass changeit -storepass changeit && \
+    mkdir -p /plugins && chmod a+rwx /plugins
 
+# add Metabase script and uberjar
 USER metabase
+ADD https://raw.githubusercontent.com/metabase/metabase/v$VERSION/bin/start /app/bin/
+ADD http://downloads.metabase.com/v$VERSION/metabase.jar /app/target/uberjar/
+
 # expose our default runtime port
 EXPOSE 3000
 
-# run it
-ENTRYPOINT ["/app/run_metabase.sh"]
+CMD ["bash", "/app/bin/start"]
