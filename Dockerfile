@@ -1,4 +1,5 @@
-FROM arm64v8/eclipse-temurin:17-jre
+FROM FROM ubuntu:22.04 
+#FROM arm64v8/eclipse-temurin:17-jre
 
 ENV FC_LANG en-US LC_CTYPE en_US.UTF-8
 
