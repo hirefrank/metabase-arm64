@@ -6,10 +6,9 @@ WORKDIR /app
 
 # add Metabase script and uberjar
 USER metabase
-ADD https://raw.githubusercontent.com/metabase/metabase/latest/bin/start /app/bin/
-ADD http://downloads.metabase.com/latest/metabase.jar /app/target/uberjar/
+ADD http://downloads.metabase.com/latest/metabase.jar /app/
 
 # expose our default runtime port
 EXPOSE 3000
 
-ENTRYPOINT ["/app/bin/start"]
+CMD ["java", "-jar", "/app/metabase.jar"]
