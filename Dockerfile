@@ -12,4 +12,4 @@ ADD http://downloads.metabase.com/latest/metabase.jar /app/target/uberjar/
 # expose our default runtime port
 EXPOSE 3000
 
-CMD ["bash", "/app/bin/start"]
+ENTRYPOINT ["/app/bin/start"]
