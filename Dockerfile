@@ -1,4 +1,4 @@
-FROM oracle/jre-11:latest
+FROM eclipse-temurin:17-jdk
 
 ENV FC_LANG en-US LC_CTYPE en_US.UTF-8
 
